@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Numerics;
 
 /// <summary>A measure of some three-dimensional vector quantity not covered by a designated type.</summary>
-public readonly record struct Unhandled3 : IVector3Quantity<Unhandled3>, IFormattable
+public readonly struct Unhandled3 : IVector3Quantity<Unhandled3>, IEquatable<Unhandled3>, IFormattable
 {
     /// <summary>The <see cref="Unhandled3"/> representing { 0, 0, 0 }.</summary>
     public static Unhandled3 Zero { get; } = new(0, 0, 0);
@@ -27,7 +27,7 @@ public readonly record struct Unhandled3 : IVector3Quantity<Unhandled3>, IFormat
     /// <summary>The magnitudes of the X, Y, and Z components of the <see cref="Unhandled3"/>.</summary>
     public Vector3 Components => (X.Magnitude, Y.Magnitude, Z.Magnitude);
 
-    /// <summary>Instantiates an <see cref="Unhandled3"/>, representing a measure of some three-dimensional vector quantity not covered by a designated type.</summary>
+    /// <summary>Constructs an <see cref="Unhandled3"/>, representing a measure of some three-dimensional vector quantity not covered by a designated type.</summary>
     /// <param name="x">The X-component of the constructed <see cref="Unhandled3"/>.</param>
     /// <param name="y">The Y-component of the constructed <see cref="Unhandled3"/>.</param>
     /// <param name="z">The Z-component of the constructed <see cref="Unhandled3"/>.</param>
@@ -38,7 +38,7 @@ public readonly record struct Unhandled3 : IVector3Quantity<Unhandled3>, IFormat
         Z = z;
     }
 
-    /// <summary>Instantiates an <see cref="Unhandled3"/>, representing a measure of some three-dimensional vector quantity not covered by a designated type.</summary>
+    /// <summary>Constructs an <see cref="Unhandled3"/>, representing a measure of some three-dimensional vector quantity not covered by a designated type.</summary>
     /// <param name="x">The magnitude of the X-component of the constructed <see cref="Unhandled3"/>.</param>
     /// <param name="y">The magnitude of the Y-component of the constructed <see cref="Unhandled3"/>.</param>
     /// <param name="z">The magnitude of the Z-component of the constructed <see cref="Unhandled3"/>.</param>
@@ -49,13 +49,22 @@ public readonly record struct Unhandled3 : IVector3Quantity<Unhandled3>, IFormat
         Z = new(z);
     }
 
-    /// <summary>Instantiates an <see cref="Unhandled3"/>, representing a measure of some three-dimensional vector quantity not covered by a designated type.</summary>
+    /// <summary>Constructs an <see cref="Unhandled3"/>, representing a measure of some three-dimensional vector quantity not covered by a designated type.</summary>
     /// <param name="components">The magnitudes of the components of the constructed <see cref="Unhandled3"/>.</param>
     public Unhandled3(Vector3 components)
     {
         X = new(components.X);
         Y = new(components.Y);
         Z = new(components.Z);
+    }
+
+    /// <summary>Constructs an <see cref="Unhandled3"/>, representing { 0, 0, 0 }.</summary>
+    /// <remarks>Consider preferring the more explicit <see cref="Zero"/>.</remarks>s
+    public Unhandled3()
+    {
+        X = Unhandled.Zero;
+        Y = Unhandled.Zero;
+        Z = Unhandled.Zero;
     }
 
     static Unhandled3 IVector3Quantity<Unhandled3>.WithComponents(Vector3 components) => new(components);
@@ -107,6 +116,11 @@ public readonly record struct Unhandled3 : IVector3Quantity<Unhandled3>, IFormat
         new Unhandled((X.Magnitude * transform.M12) + (Y.Magnitude * transform.M22) + (Z.Magnitude * transform.M32) + transform.M42),
         new Unhandled((X.Magnitude * transform.M13) + (Y.Magnitude * transform.M23) + (Z.Magnitude * transform.M33) + transform.M43)
     );
+
+    /// <summary>Determiens whether the <see cref="Unhandled3"/> is equivalent to the provided <see cref="object"/>.</summary>
+    /// <param name="obj">The <see cref="object"/> to which the <see cref="Unhandled3"/> is compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the <see cref="Unhandled3"/> and <see cref="object"/> are quivalent.</returns>
+    public override bool Equals(object? obj) => obj is Unhandled3 other && Equals(other);
 
     /// <summary>Determines whether the <see cref="Unhandled3"/> is equivalent to another, provided, <see cref="Unhandled3"/>.</summary>
     /// <param name="other">The <see cref="Unhandled3"/> to which the original <see cref="Unhandled3"/> is compared.</param>
@@ -237,6 +251,11 @@ public readonly record struct Unhandled3 : IVector3Quantity<Unhandled3>, IFormat
         return (X / divisor.Magnitude, Y / divisor.Magnitude, Z / divisor.Magnitude);
     }
 
+    /// <summary>Computes the dot-product of the <see cref="Unhandled3"/> and the provided <see cref="Vector3"/>.</summary>
+    /// <param name="factor">The <see cref="Vector3"/> by which the <see cref="Unhandled3"/> is dot-multiplied.</param>
+    /// <returns>The dot-product of the <see cref="Unhandled3"/> and <see cref="Vector3"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
+    public Unhandled Dot(Vector3 factor) => Dot<Vector3>(factor);
+
     /// <summary>Computes the dot product of the <see cref="Unhandled3"/> and the provided <typeparamref name="TVector"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled3"/> is dot multiplied.</typeparam>
     /// <param name="factor">The <typeparamref name="TVector"/> by which the <see cref="Unhandled3"/> is dot multiplied.</param>
@@ -248,6 +267,11 @@ public readonly record struct Unhandled3 : IVector3Quantity<Unhandled3>, IFormat
 
         return (X * factor.X) + (Y * factor.Y) + (Z * factor.Z);
     }
+
+    /// <summary>Computes the cross-product of the <see cref="Unhandled3"/> and the provided <see cref="Vector3"/>.</summary>
+    /// <param name="factor">The <see cref="Vector3"/> by which the <see cref="Unhandled3"/> is cross-multiplied.</param>
+    /// <returns>The cross-product of the <see cref="Unhandled2"/> and <see cref="Vector3"/>, { <see langword="this"/> ⨯ <paramref name="factor"/> }.</returns>
+    public Unhandled3 Cross(Vector3 factor) => Cross<Vector3>(factor);
 
     /// <summary>Computes the cross-product of the <see cref="Unhandled3"/> and the provided <typeparamref name="TVector"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled3"/> is cross-multiplied.</typeparam>
@@ -330,6 +354,12 @@ public readonly record struct Unhandled3 : IVector3Quantity<Unhandled3>, IFormat
         return a.DivideBy(b);
     }
 
+    /// <summary>Computes the dot-product of the provided <see cref="Unhandled3"/> and <see cref="Vector3"/>.</summary>
+    /// <param name="a">The <see cref="Unhandled3"/> by which the <see cref="Vector3"/> is dot-multiplied.</param>
+    /// <param name="b">The <see cref="Vector3"/> by which the <see cref="Unhandled3"/> is dot-multiplied.</param>
+    /// <returns>The dot-product of the <see cref="Unhandled3"/> and <see cref="Vector3"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
+    public static Unhandled Dot(Unhandled3 a, Vector3 b) => a.Dot(b);
+
     /// <summary>Computes the dot-product of the provided <see cref="Unhandled3"/> and <typeparamref name="TVector"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled3"/> is dot-multiplied.</typeparam>
     /// <param name="a">The <see cref="Unhandled3"/> by which the <typeparamref name="TVector"/> is dot-multiplied.</param>
@@ -343,6 +373,12 @@ public readonly record struct Unhandled3 : IVector3Quantity<Unhandled3>, IFormat
         return a.Dot(b);
     }
 
+    /// <summary>Computes the cross-product of the provided <see cref="Unhandled3"/> and <see cref="Vector3"/>.</summary>
+    /// <param name="a">The <see cref="Unhandled3"/> by which the <see cref="Vector3"/> is cross-multiplied.</param>
+    /// <param name="b">The <see cref="Vector3"/> by which the <see cref="Unhandled3"/> is cross-multiplied.</param>
+    /// <returns>The cross-product of the <see cref="Unhandled3"/> and <see cref="Vector3"/>, { <paramref name="a"/> ⨯ <paramref name="b"/> }.</returns>
+    public static Unhandled3 Cross(Unhandled3 a, Vector3 b) => a.Cross(b);
+
     /// <summary>Computes the cross-product of the provided <see cref="Unhandled3"/> and <typeparamref name="TVector"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled3"/> is cross-multiplied.</typeparam>
     /// <param name="a">The <see cref="Unhandled3"/>, the first factor in the cross-multiplication with the <typeparamref name="TVector"/>.</param>
@@ -355,6 +391,18 @@ public readonly record struct Unhandled3 : IVector3Quantity<Unhandled3>, IFormat
 
         return a.Cross(b);
     }
+
+    /// <summary>Determines whether the provided <see cref="Unhandled3"/> are equivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Unhandled3"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Unhandled3"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Unhandled3"/> are equivalent.</returns>
+    public static bool operator ==(Unhandled3 lhs, Unhandled3 rhs) => Equals(lhs, rhs);
+
+    /// <summary>Determines whether the provided <see cref="Unhandled3"/> are inequivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Unhandled3"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Unhandled3"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Unhandled3"/> are inequivalent.</returns>
+    public static bool operator !=(Unhandled3 lhs, Unhandled3 rhs) => (lhs == rhs) is false;
 
     /// <summary>Applies the unary plus to the provided <see cref="Unhandled3"/>.</summary>
     /// <param name="a">The <see cref="Unhandled3"/> to which the unary plus is applied.</param>

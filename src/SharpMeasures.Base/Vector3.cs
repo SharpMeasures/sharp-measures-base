@@ -5,13 +5,16 @@ using System.Globalization;
 using System.Numerics;
 
 /// <summary>A three-dimensional vector, representing the <see cref="Scalar"/> components { X, Y, Z }.</summary>
-public readonly record struct Vector3 : IVector3Quantity<Vector3>, IFormattable
+public readonly struct Vector3 : IVector3Quantity<Vector3>, IEquatable<Vector3>, IFormattable
 {
     /// <summary>The <see cref="Vector3"/> representing { 0, 0, 0 }.</summary>
     public static Vector3 Zero { get; } = (0, 0, 0);
 
     /// <summary>The <see cref="Vector3"/> representing { 1, 1, 1 }.</summary>
     public static Vector3 Ones { get; } = (1, 1, 1);
+
+    /// <summary>The <see cref="Vector3"/> representing { -1, -1, -1 }.</summary>
+    public static Vector3 NegativeOnes { get; } = (-1, -1, -1);
 
     /// <summary>The X-component of the <see cref="Vector3"/>.</summary>
     public Scalar X { get; }
@@ -24,7 +27,7 @@ public readonly record struct Vector3 : IVector3Quantity<Vector3>, IFormattable
 
     Vector3 IVector3Quantity.Components => this;
 
-    /// <summary>Instantiates a <see cref="Vector3"/>, representing the <see cref="Scalar"/> components { X, Y, Z }.</summary>
+    /// <summary>Constructs a <see cref="Vector3"/>, representing the <see cref="Scalar"/> components { X, Y, Z }.</summary>
     /// <param name="x">The X-component of the constructed <see cref="Vector3"/>.</param>
     /// <param name="y">The Y-component of the constructed <see cref="Vector3"/>.</param>
     /// <param name="z">The Z-component of the constructed <see cref="Vector3"/>.</param>
@@ -33,6 +36,15 @@ public readonly record struct Vector3 : IVector3Quantity<Vector3>, IFormattable
         X = x;
         Y = y;
         Z = z;
+    }
+
+    /// <summary>Constructs a <see cref="Vector3"/>, representing { 0, 0, 0 }.</summary>
+    /// <remarks>Consider preferring the more explicit <see cref="Zero"/>.</remarks>
+    public Vector3()
+    {
+        X = Scalar.Zero;
+        Y = Scalar.Zero;
+        Z = Scalar.Zero;
     }
 
     static Vector3 IVector3Quantity<Vector3>.WithComponents(Vector3 components) => components;
@@ -69,6 +81,11 @@ public readonly record struct Vector3 : IVector3Quantity<Vector3>, IFormattable
         (X * transform.M12) + (Y * transform.M22) + (Z * transform.M32) + transform.M42,
         (X * transform.M13) + (Y * transform.M23) + (Z * transform.M33) + transform.M43
     );
+
+    /// <summary>Determiens whether the <see cref="Vector3"/> is equivalent to the provided <see cref="object"/>.</summary>
+    /// <param name="obj">The <see cref="object"/> to which the <see cref="Vector3"/> is compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the <see cref="Vector3"/> and <see cref="object"/> are quivalent.</returns>
+    public override bool Equals(object? obj) => obj is Vector3 other && Equals(other);
 
     /// <summary>Determines whether the <see cref="Vector3"/> is equivalent to another, provided, <see cref="Vector3"/>.</summary>
     /// <param name="other">The <see cref="Vector3"/> to which the original <see cref="Vector3"/> is compared.</param>
@@ -267,6 +284,18 @@ public readonly record struct Vector3 : IVector3Quantity<Vector3>, IFormattable
     /// <param name="b">The second <see cref="Vector3"/>, by which the first <see cref="Vector3"/> is cross-multiplied.</param>
     /// <returns>The cross-product of the <see cref="Vector3"/>, { <paramref name="a"/> ⨯ <paramref name="b"/> }.</returns>
     public static Vector3 Cross(Vector3 a, Vector3 b) => a.Cross(b);
+
+    /// <summary>Determines whether the provided <see cref="Vector3"/> are equivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Vector3"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Vector3"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Vector3"/> are equivalent.</returns>
+    public static bool operator ==(Vector3 lhs, Vector3 rhs) => Equals(lhs, rhs);
+
+    /// <summary>Determines whether the provided <see cref="Vector3"/> are inequivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Vector3"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Vector3"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Vector3"/> are inequivalent.</returns>
+    public static bool operator !=(Vector3 lhs, Vector3 rhs) => (lhs == rhs) is false;
 
     /// <summary>Applies the unary plus to the provided <see cref="Vector3"/>.</summary>
     /// <param name="a">The <see cref="Vector3"/> to which the unary plus is applied.</param>

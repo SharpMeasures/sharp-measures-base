@@ -5,7 +5,7 @@ using System.Globalization;
 
 /// <summary>Describes a metric prefix, scaling quantities using powers of 10.</summary>
 /// <remarks>Common <see cref="MetricPrefix"/> are defined as static properties.</remarks>
-public sealed record class MetricPrefix : IPrefix, IComparable<MetricPrefix>, IFormattable
+public sealed class MetricPrefix : IPrefix, IEquatable<MetricPrefix>, IComparable<MetricPrefix>, IFormattable
 {
     /// <summary>Indicates that a quantity should be scaled by one nonillion { 10 ^ 30 = 1 000 ^ 10 }. Usually denoted by { Q }.</summary>
     public static MetricPrefix Quetta { get; } = ThousandToThePower(10);
@@ -146,6 +146,11 @@ public sealed record class MetricPrefix : IPrefix, IComparable<MetricPrefix>, IF
         return Factor.CompareTo(other.Factor);
     }
 
+    /// <summary>Determiens whether the <see cref="MetricPrefix"/> is equivalent to the provided <see cref="object"/>.</summary>
+    /// <param name="obj">The <see cref="object"/> to which the <see cref="MetricPrefix"/> is compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the <see cref="MetricPrefix"/> and <see cref="object"/> are quivalent.</returns>
+    public override bool Equals(object? obj) => Equals(obj as MetricPrefix);
+
     /// <summary>Determines whether the <see cref="MetricPrefix"/> is equivalent to another, provided, <see cref="MetricPrefix"/>.</summary>
     /// <param name="other">The <see cref="MetricPrefix"/> to which the original <see cref="MetricPrefix"/> is compared.</param>
     /// <returns>A <see cref="bool"/> indicating whether the two <see cref="MetricPrefix"/> are equivalent.</returns>
@@ -195,6 +200,18 @@ public sealed record class MetricPrefix : IPrefix, IComparable<MetricPrefix>, IF
     /// <remarks>The behaviour is consistent with <see cref="Scalar.ToStringInvariant(string?)"/>.</remarks>
     /// <returns>A <see cref="string"/>-representation of the <see cref="MetricPrefix"/>.</returns>
     public string ToStringInvariant(string? format) => ToString(format, CultureInfo.InvariantCulture);
+
+    /// <summary>Determines whether the provided <see cref="MetricPrefix"/> are equivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="MetricPrefix"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="MetricPrefix"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="MetricPrefix"/> are equivalent.</returns>
+    public static bool operator ==(MetricPrefix? lhs, MetricPrefix? rhs) => Equals(lhs, rhs);
+
+    /// <summary>Determines whether the provided <see cref="MetricPrefix"/> are inequivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="MetricPrefix"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="MetricPrefix"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="MetricPrefix"/> are inequivalent.</returns>
+    public static bool operator !=(MetricPrefix? lhs, MetricPrefix? rhs) => (lhs == rhs) is false;
 
     /// <summary>Determines whether a <see cref="MetricPrefix"/>, <paramref name="lhs"/>, represents a smaller scale-factor than another <see cref="MetricPrefix"/>, <paramref name="rhs"/>.</summary>
     /// <param name="lhs">The first <see cref="MetricPrefix"/>, assumed to represent a smaller scale-factor than the other <see cref="MetricPrefix"/>.</param>

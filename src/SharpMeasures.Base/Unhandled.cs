@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 /// <summary>A measure of some scalar quantity not covered by a designated type.</summary>
-public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparable<Unhandled>, IFormattable
+public readonly struct Unhandled : IScalarQuantity<Unhandled>, IEquatable<Unhandled>, IComparable<Unhandled>, IFormattable
 {
     /// <summary>The <see cref="Unhandled"/> representing { 0 }.</summary>
     public static Unhandled Zero { get; } = new(Scalar.Zero);
@@ -22,11 +22,18 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>The magnitude of the <see cref="Unhandled"/>.</summary>
     public Scalar Magnitude { get; }
 
-    /// <summary>Instantiates an <see cref="Unhandled"/>, representing a measure of some scalar quantity not covered by a designated type.</summary>
+    /// <summary>Constructs an <see cref="Unhandled"/>, representing a measure of some scalar quantity not covered by a designated type.</summary>
     /// <param name="magnitude">The magnitude of the constructed <see cref="Unhandled"/>.</param>
     public Unhandled(Scalar magnitude)
     {
         Magnitude = magnitude;
+    }
+
+    /// <summary>Constructs an <see cref="Unhandled"/>, representing { 0 }.</summary>
+    /// <remarks>Consider preferring the more explicit <see cref="Zero"/>.</remarks>
+    public Unhandled()
+    {
+        Magnitude = Scalar.Zero;
     }
 
     static Unhandled IScalarQuantity<Unhandled>.WithMagnitude(Scalar magnitude) => new(magnitude);
@@ -66,12 +73,11 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
 
     /// <summary>Computes the sign of the <see cref="Unhandled"/>, resulting in:
     /// <list type="bullet">
-    /// <item><term>1</term><description> The magnitude is positive, but not { 0 }.</description></item>
-    /// <item><term>0</term><description> The magnitude is { 0 }.</description></item>
-    /// <item><term>-1</term><description> The magnitude is negative.</description></item>
+    /// <item><term>&gt; 0</term><description> The magnitude is larger than { 0 }.</description></item>
+    /// <item><term>= 0</term><description> The magnitude is { 0 }.</description></item>
+    /// <item><term>&lt; 0</term><description> The magnitude is smaller than { 0 }.</description></item>
     /// </list></summary>
-    /// <returns>One of the <see cref="int"/> values { 1, 0, -1 }, as detailed above.</returns>
-    /// <remarks>An <see cref="ArithmeticException"/> will be thrown if the <see cref="Unhandled"/> represents { <see cref="Scalar.NaN"/> }.</remarks>
+    /// <returns>An <see cref="int"/> value, as detailed above.</returns>
     /// <exception cref="ArithmeticException"/>
     public int Sign() => Magnitude.Sign();
 
@@ -100,16 +106,21 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <returns>The cube root of the <see cref="Unhandled"/>, { √ <see langword="this"/> }.</returns>
     public Unhandled CubeRoot() => new(Magnitude.CubeRoot());
 
-    /// <summary>Compares the <see cref="Unhandled"/> to another, provided, <see cref="Unhandled"/>, resulting in:
+    /// <summary>Compares the <see cref="Unhandled"/> to another, provided, <see cref="Unhandled"/>, resulting in an <see cref="int"/> according to:
     /// <list type="bullet">
-    /// <item><term>1</term><description> The <see cref="Unhandled"/> represents a larger magnitude than does the provided <see cref="Unhandled"/>.</description></item>
-    /// <item><term>0</term><description> The <see cref="Unhandled"/> and the provided <see cref="Unhandled"/> represent the same magnitude.</description></item>
-    /// <item><term>-1</term><description> The <see cref="Unhandled"/> represents a smaller magnitude than does the provided <see cref="Unhandled"/>.</description></item>
-    /// </list><para>The value { <see cref="NaN"/> } represents the smallest possible value.</para></summary>
+    /// <item><term>&gt; 0</term><description> The <see cref="Unhandled"/> represents a larger magnitude than does the provided <see cref="Unhandled"/>.</description></item>
+    /// <item><term>= 0</term><description> The <see cref="Unhandled"/> and the provided <see cref="Unhandled"/> represent the same magnitude.</description></item>
+    /// <item><term>&lt; 0</term><description> The <see cref="Unhandled"/> represents a smaller magnitude than does the provided <see cref="Unhandled"/>.</description></item>
+    /// </list></summary>
     /// <param name="other">The <see cref="Unhandled"/> to which the original <see cref="Unhandled"/> is compared.</param>
     /// <remarks>The behaviour is consistent with <see cref="double.CompareTo(double)"/>.</remarks>
-    /// <returns>One of the <see cref="int"/> values { 1, 0, -1 }, as detailed above.</returns>
+    /// <returns>An <see cref="int"/> value, as detailed above.</returns>
     public int CompareTo(Unhandled other) => Magnitude.CompareTo(other.Magnitude);
+
+    /// <summary>Determiens whether the <see cref="Unhandled"/> is equivalent to the provided <see cref="object"/>.</summary>
+    /// <param name="obj">The <see cref="object"/> to which the <see cref="Unhandled"/> is compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the <see cref="Unhandled"/> and <see cref="object"/> are quivalent.</returns>
+    public override bool Equals(object? obj) => obj is Unhandled other && Equals(other);
 
     /// <summary>Determines whether the <see cref="Unhandled"/> is equivalent to another, provided, <see cref="Unhandled"/>.</summary>
     /// <param name="other">The <see cref="Unhandled"/> to which the original <see cref="Unhandled"/> is compared.</param>
@@ -255,39 +266,36 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
         return new(Magnitude * factor.Magnitude);
     }
 
-    /// <summary>Computes the product of the <see cref="Unhandled"/> and the provided <typeparamref name="TVector"/>.</summary>
-    /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled"/> is multiplied.</typeparam>
-    /// <param name="factor">The <typeparamref name="TVector"/> by which the <see cref="Unhandled"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
-    /// <returns>The product of the <see cref="Unhandled"/> and <typeparamref name="TVector"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
+    /// <summary>Computes the product of the <see cref="Unhandled"/> and the provided <see cref="IVector2Quantity"/>.</summary>
+    /// <param name="factor">The <see cref="IVector2Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
+    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
+    /// <returns>The product of the <see cref="Unhandled"/> and <see cref="IVector2Quantity"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
-    public Unhandled2 Multiply<TVector>(IVector2Quantity<TVector> factor) where TVector : IVector2Quantity<TVector>
+    public Unhandled2 Multiply(IVector2Quantity factor)
     {
         ArgumentNullException.ThrowIfNull(factor);
 
         return new(Magnitude * factor.X, Magnitude * factor.Y);
     }
 
-    /// <summary>Computes the product of the <see cref="Unhandled"/> and the provided <typeparamref name="TVector"/>.</summary>
-    /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled"/> is multiplied.</typeparam>
-    /// <param name="factor">The <typeparamref name="TVector"/> by which the <see cref="Unhandled"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
-    /// <returns>The product of the <see cref="Unhandled"/> and <typeparamref name="TVector"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
+    /// <summary>Computes the product of the <see cref="Unhandled"/> and the provided <see cref="IVector3Quantity"/>.</summary>
+    /// <param name="factor">The <see cref="IVector3Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
+    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
+    /// <returns>The product of the <see cref="Unhandled"/> and <see cref="IVector3Quantity"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
-    public Unhandled3 Multiply<TVector>(IVector3Quantity<TVector> factor) where TVector : IVector3Quantity<TVector>
+    public Unhandled3 Multiply(IVector3Quantity factor)
     {
         ArgumentNullException.ThrowIfNull(factor);
 
         return new(Magnitude * factor.X, Magnitude * factor.Y, Magnitude * factor.Z);
     }
 
-    /// <summary>Computes the product of the <see cref="Unhandled"/> and the provided <typeparamref name="TVector"/>.</summary>
-    /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled"/> is multiplied.</typeparam>
-    /// <param name="factor">The <typeparamref name="TVector"/> by which the <see cref="Unhandled"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
-    /// <returns>The product of the <see cref="Unhandled"/> and <typeparamref name="TVector"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
+    /// <summary>Computes the product of the <see cref="Unhandled"/> and the provided <see cref="IVector4Quantity"/>.</summary>
+    /// <param name="factor">The <see cref="IVector4Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
+    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
+    /// <returns>The product of the <see cref="Unhandled"/> and <see cref="IVector4Quantity"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
-    public Unhandled4 Multiply<TVector>(IVector4Quantity<TVector> factor) where TVector : IVector4Quantity<TVector>
+    public Unhandled4 Multiply(IVector4Quantity factor)
     {
         ArgumentNullException.ThrowIfNull(factor);
 
@@ -442,42 +450,39 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
         return x.Multiply(y);
     }
 
-    /// <summary>Computes the product of the provided <see cref="Unhandled"/> and <typeparamref name="TVector"/>.</summary>
-    /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled"/> is multiplied.</typeparam>
-    /// <param name="a">The <see cref="Unhandled"/> by which the <typeparamref name="TVector"/> is multiplied.</param>
-    /// <param name="b">The <typeparamref name="TVector"/> by which the <see cref="Unhandled"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
-    /// <returns>The product of the <see cref="Unhandled"/> and <typeparamref name="TVector"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
+    /// <summary>Computes the product of the provided <see cref="Unhandled"/> and <see cref="IVector2Quantity"/>.</summary>
+    /// <param name="a">The <see cref="Unhandled"/> by which the <see cref="IVector2Quantity"/> is multiplied.</param>
+    /// <param name="b">The <see cref="IVector2Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
+    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
+    /// <returns>The product of the <see cref="Unhandled"/> and <see cref="IVector2Quantity"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
-    public static Unhandled2 Multiply<TVector>(Unhandled a, IVector2Quantity<TVector> b) where TVector : IVector2Quantity<TVector>
+    public static Unhandled2 Multiply(Unhandled a, IVector2Quantity b)
     {
         ArgumentNullException.ThrowIfNull(b);
 
         return a.Multiply(b);
     }
 
-    /// <summary>Computes the product of the provided <see cref="Unhandled"/> and <typeparamref name="TVector"/>.</summary>
-    /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled"/> is multiplied.</typeparam>
-    /// <param name="a">The <see cref="Unhandled"/> by which the <typeparamref name="TVector"/> is multiplied.</param>
-    /// <param name="b">The <typeparamref name="TVector"/> by which the <see cref="Unhandled"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
-    /// <returns>The product of the <see cref="Unhandled"/> and <typeparamref name="TVector"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
+    /// <summary>Computes the product of the provided <see cref="Unhandled"/> and <see cref="IVector3Quantity"/>.</summary>
+    /// <param name="a">The <see cref="Unhandled"/> by which the <see cref="IVector3Quantity"/> is multiplied.</param>
+    /// <param name="b">The <see cref="IVector3Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
+    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
+    /// <returns>The product of the <see cref="Unhandled"/> and <see cref="IVector3Quantity"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
-    public static Unhandled3 Multiply<TVector>(Unhandled a, IVector3Quantity<TVector> b) where TVector : IVector3Quantity<TVector>
+    public static Unhandled3 Multiply(Unhandled a, IVector3Quantity b)
     {
         ArgumentNullException.ThrowIfNull(b);
 
         return a.Multiply(b);
     }
 
-    /// <summary>Computes the product of the provided <see cref="Unhandled"/> and <typeparamref name="TVector"/>.</summary>
-    /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled"/> is multiplied.</typeparam>
-    /// <param name="a">The <see cref="Unhandled"/> by which the <typeparamref name="TVector"/> is multiplied.</param>
-    /// <param name="b">The <typeparamref name="TVector"/> by which the <see cref="Unhandled"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
-    /// <returns>The product of the <see cref="Unhandled"/> and <typeparamref name="TVector"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
+    /// <summary>Computes the product of the provided <see cref="Unhandled"/> and <see cref="IVector4Quantity"/>.</summary>
+    /// <param name="a">The <see cref="Unhandled"/> by which the <see cref="IVector4Quantity"/> is multiplied.</param>
+    /// <param name="b">The <see cref="IVector4Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
+    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
+    /// <returns>The product of the <see cref="Unhandled"/> and <see cref="IVector4Quantity"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
-    public static Unhandled4 Multiply<TVector>(Unhandled a, IVector4Quantity<TVector> b) where TVector : IVector4Quantity<TVector>
+    public static Unhandled4 Multiply(Unhandled a, IVector4Quantity b)
     {
         ArgumentNullException.ThrowIfNull(b);
 
@@ -541,6 +546,18 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
 
         return x.DivideBy(y);
     }
+
+    /// <summary>Determines whether the provided <see cref="Unhandled"/> are equivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Unhandled"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Unhandled"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Unhandled"/> are equivalent.</returns>
+    public static bool operator ==(Unhandled lhs, Unhandled rhs) => Equals(lhs, rhs);
+
+    /// <summary>Determines whether the provided <see cref="Unhandled"/> are inequivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Unhandled"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Unhandled"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Unhandled"/> are inequivalent.</returns>
+    public static bool operator !=(Unhandled lhs, Unhandled rhs) => (lhs == rhs) is false;
 
     /// <summary>Determines whether an <see cref="Unhandled"/>, <paramref name="lhs"/>, represents a smaller magnitude than another <see cref="Unhandled"/>, <paramref name="rhs"/>.</summary>
     /// <param name="lhs">The first <see cref="Unhandled"/>, assumed to represent a smaller magnitude than the other <see cref="Unhandled"/>.</param>
@@ -635,7 +652,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the sum of the provided <see cref="Unhandled"/> and <see cref="IScalarQuantity"/>.</summary>
     /// <param name="x">The <see cref="Unhandled"/> that is added to the <see cref="IScalarQuantity"/>.</param>
     /// <param name="y">The <see cref="IScalarQuantity"/> that is added to the <see cref="Unhandled"/>.</param>
-    /// <remarks>For improved performance, prefer <see cref="Add{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Add{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The sum of the <see cref="Unhandled"/> and <see cref="IScalarQuantity"/>, { <paramref name="x"/> + <paramref name="y"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled operator +(Unhandled x, IScalarQuantity y)
@@ -648,7 +665,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the sum of the provided <see cref="Unhandled"/> and <see cref="IScalarQuantity"/>.</summary>
     /// <param name="x">The <see cref="IScalarQuantity"/> that is added to the <see cref="Unhandled"/>.</param>
     /// <param name="y">The <see cref="Unhandled"/> that is added to the <see cref="IScalarQuantity"/>.</param>
-    /// <remarks>For improved performance, prefer <see cref="Add{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Add{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The sum of the <see cref="Unhandled"/> and <see cref="IScalarQuantity"/>, { <paramref name="x"/> + <paramref name="y"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     [SuppressMessage("Major Code Smell", "S2234: Parameters should be passed in the correct order", Justification = "Addition is commutative.")]
@@ -663,7 +680,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <param name="x">The <see cref="Unhandled"/> from which the <see cref="IScalarQuantity"/> is subtracted.</param>
     /// <param name="y">The <see cref="IScalarQuantity"/> that is subtracted from the <see cref="Unhandled"/>.</param>
     /// <remarks>The resulting <see cref="Unhandled"/> may be negative. If this is not desired, use <see cref="Difference{TScalar}(Unhandled, TScalar)"/>.
-    /// <para>For improved performance, prefer <see cref="Subtract{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/> (avoiding boxing).</para></remarks>
+    /// <para>For improved performance, prefer <see cref="Subtract{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/>.</para></remarks>
     /// <returns>The signed difference between the <see cref="Unhandled"/> and <see cref="IScalarQuantity"/>, { <paramref name="x"/> - <paramref name="y"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled operator -(Unhandled x, IScalarQuantity y)
@@ -677,7 +694,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <param name="x">The <see cref="IScalarQuantity"/> from which the <see cref="Unhandled"/> is subtracted.</param>
     /// <param name="y">The <see cref="Unhandled"/> that is subtracted from the <see cref="IScalarQuantity"/>.</param>
     /// <remarks>The resulting <see cref="Unhandled"/> may be negative. If this is not desired, use <see cref="Difference{TScalar}(Unhandled, TScalar)"/>.
-    /// <para>For improved performance, prefer -<see cref="Subtract{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/> (avoiding boxing).</para></remarks>
+    /// <para>For improved performance, prefer -<see cref="Subtract{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/>.</para></remarks>
     /// <returns>The signed difference between the <see cref="IScalarQuantity"/> and <see cref="Unhandled"/>, { <paramref name="x"/> - <paramref name="y"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     [SuppressMessage("Major Code Smell", "S2234: Parameters should be passed in the correct order", Justification = "Subtraction is anti-commutative.")]
@@ -691,7 +708,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the product of the provided <see cref="Unhandled"/> and <see cref="IScalarQuantity"/>.</summary>
     /// <param name="x">The <see cref="Unhandled"/> by which the <see cref="IScalarQuantity"/> is multiplied.</param>
     /// <param name="y">The <see cref="IScalarQuantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The product of the <see cref="Unhandled"/> and <see cref="IScalarQuantity"/>, { <paramref name="x"/> ∙ <paramref name="y"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled operator *(Unhandled x, IScalarQuantity y)
@@ -704,7 +721,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the product of the provided <see cref="IScalarQuantity"/> and <see cref="Unhandled"/>.</summary>
     /// <param name="x">The <see cref="IScalarQuantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
     /// <param name="y">The <see cref="Unhandled"/> by which the <see cref="IScalarQuantity"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply{TScalar}(TScalar)"/> when the scalar quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply{TScalar}(TScalar)"/> when the scalar quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The product of the <see cref="IScalarQuantity"/> and <see cref="Unhandled"/>, { <paramref name="x"/> ∙ <paramref name="y"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     [SuppressMessage("Major Code Smell", "S2234: Parameters should be passed in the correct order", Justification = "Multiplication is commutative.")]
@@ -718,7 +735,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the quotient of the provided <see cref="Unhandled"/> and <see cref="IScalarQuantity"/>.</summary>
     /// <param name="x">The <see cref="Unhandled"/> that is divided by the <see cref="IScalarQuantity"/>.</param>
     /// <param name="y">The <see cref="IScalarQuantity"/> by which the <see cref="Unhandled"/> is divided.</param>
-    /// <remarks>For improved performance, prefer <see cref="DivideBy{TScalar}(TScalar)"/> when the scalar quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="DivideBy{TScalar}(TScalar)"/> when the scalar quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The quotient of the <see cref="Unhandled"/> and <see cref="IScalarQuantity"/>, { <paramref name="x"/> / <paramref name="y"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled operator /(Unhandled x, IScalarQuantity y)
@@ -731,7 +748,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the quotient of the provided <see cref="IScalarQuantity"/> and <see cref="Unhandled"/>.</summary>
     /// <param name="x">The <see cref="IScalarQuantity"/>that is divided by the <see cref="Unhandled"/>.</param>
     /// <param name="y">The <see cref="Unhandled"/> by which the <see cref="IScalarQuantity"/> is divided.</param>
-    /// <remarks>For improved performance, prefer <see cref="Reciprocal"/> and <see cref="Multiply{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Reciprocal"/> and <see cref="Multiply{TScalar}(Unhandled, TScalar)"/> when the scalar quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The quotient of the <see cref="IScalarQuantity"/> and <see cref="Unhandled"/>, { <paramref name="x"/> / <paramref name="y"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled operator /(IScalarQuantity x, Unhandled y)
@@ -744,7 +761,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the product of the provided <see cref="Unhandled"/> and <see cref="IVector2Quantity"/>.</summary>
     /// <param name="a">The <see cref="Unhandled"/> by which the <see cref="IVector2Quantity"/> is multiplied.</param>
     /// <param name="b">The <see cref="IVector2Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The product of the <see cref="Unhandled"/> and <see cref="IVector2Quantity"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled2 operator *(Unhandled a, IVector2Quantity b)
@@ -757,7 +774,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the product of the provided <see cref="IVector2Quantity"/> and <see cref="Unhandled"/>.</summary>
     /// <param name="a">The <see cref="IVector2Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
     /// <param name="b">The <see cref="Unhandled"/> by which the <see cref="IVector2Quantity"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The product of the <see cref="IVector2Quantity"/> and <see cref="Unhandled"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled2 operator *(IVector2Quantity a, Unhandled b)
@@ -770,7 +787,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the quotient of the provided <see cref="IVector2Quantity"/> and <see cref="Unhandled"/>.</summary>
     /// <param name="a">The <see cref="IVector2Quantity"/>that is divided by the <see cref="Unhandled"/>.</param>
     /// <param name="b">The <see cref="Unhandled"/> by which the <see cref="IVector2Quantity"/> is divided.</param>
-    /// <remarks>For improved performance, prefer <see cref="Reciprocal"/> and <see cref="Multiply2{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Reciprocal"/> and <see cref="Multiply2{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The quotient of the <see cref="IVector2Quantity"/> and <see cref="Unhandled"/>, { <paramref name="a"/> / <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled2 operator /(IVector2Quantity a, Unhandled b)
@@ -783,7 +800,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the product of the provided <see cref="Unhandled"/> and <see cref="IVector3Quantity"/>.</summary>
     /// <param name="a">The <see cref="Unhandled"/> by which the <see cref="IVector3Quantity"/> is multiplied.</param>
     /// <param name="b">The <see cref="IVector3Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The product of the <see cref="Unhandled"/> and <see cref="IVector3Quantity"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled3 operator *(Unhandled a, IVector3Quantity b)
@@ -796,7 +813,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the product of the provided <see cref="IVector3Quantity"/> and <see cref="Unhandled"/>.</summary>
     /// <param name="a">The <see cref="IVector3Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
     /// <param name="b">The <see cref="Unhandled"/> by which the <see cref="IVector3Quantity"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The product of the <see cref="IVector3Quantity"/> and <see cref="Unhandled"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled3 operator *(IVector3Quantity a, Unhandled b)
@@ -809,7 +826,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the quotient of the provided <see cref="IVector3Quantity"/> and <see cref="Unhandled"/>.</summary>
     /// <param name="a">The <see cref="IVector3Quantity"/>that is divided by the <see cref="Unhandled"/>.</param>
     /// <param name="b">The <see cref="Unhandled"/> by which the <see cref="IVector3Quantity"/> is divided.</param>
-    /// <remarks>For improved performance, prefer <see cref="Reciprocal"/> and <see cref="Multiply3{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Reciprocal"/> and <see cref="Multiply3{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The quotient of the <see cref="IVector3Quantity"/> and <see cref="Unhandled"/>, { <paramref name="a"/> / <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled3 operator /(IVector3Quantity a, Unhandled b)
@@ -822,7 +839,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the product of the provided <see cref="Unhandled"/> and <see cref="IVector4Quantity"/>.</summary>
     /// <param name="a">The <see cref="Unhandled"/> by which the <see cref="IVector4Quantity"/> is multiplied.</param>
     /// <param name="b">The <see cref="IVector4Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The product of the <see cref="Unhandled"/> and <see cref="IVector4Quantity"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled4 operator *(Unhandled a, IVector4Quantity b)
@@ -835,7 +852,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the product of the provided <see cref="IVector4Quantity"/> and <see cref="Unhandled"/>.</summary>
     /// <param name="a">The <see cref="IVector4Quantity"/> by which the <see cref="Unhandled"/> is multiplied.</param>
     /// <param name="b">The <see cref="Unhandled"/> by which the <see cref="IVector4Quantity"/> is multiplied.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The product of the <see cref="IVector4Quantity"/> and <see cref="Unhandled"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled4 operator *(IVector4Quantity a, Unhandled b)
@@ -848,7 +865,7 @@ public readonly record struct Unhandled : IScalarQuantity<Unhandled>, IComparabl
     /// <summary>Computes the quotient of the provided <see cref="IVector4Quantity"/> and <see cref="Unhandled"/>.</summary>
     /// <param name="a">The <see cref="IVector4Quantity"/>that is divided by the <see cref="Unhandled"/>.</param>
     /// <param name="b">The <see cref="Unhandled"/> by which the <see cref="IVector4Quantity"/> is divided.</param>
-    /// <remarks>For improved performance, prefer <see cref="Reciprocal"/> and <see cref="Multiply4{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Reciprocal"/> and <see cref="Multiply4{TVector}(Unhandled, TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The quotient of the <see cref="IVector4Quantity"/> and <see cref="Unhandled"/>, { <paramref name="a"/> / <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static Unhandled4 operator /(IVector4Quantity a, Unhandled b)

@@ -4,13 +4,16 @@ using System;
 using System.Globalization;
 
 /// <summary>A scalar value, representing a <see cref="double"/> magnitude.</summary>
-public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scalar>, IFormattable
+public readonly struct Scalar : IScalarQuantity<Scalar>, IEquatable<Scalar>, IComparable<Scalar>, IFormattable
 {
     /// <summary>The <see cref="Scalar"/> representing { 0 }.</summary>
     public static Scalar Zero { get; } = 0;
 
     /// <summary>The <see cref="Scalar"/> representing { 1 }.</summary>
     public static Scalar One { get; } = 1;
+
+    /// <summary>The <see cref="Scalar"/> representing { -1 }.</summary>
+    public static Scalar NegativeOne { get; } = -1;
 
     /// <summary>The <see cref="Scalar"/> representing { <see cref="double.NaN"/> }.</summary>
     public static Scalar NaN { get; } = double.NaN;
@@ -25,11 +28,18 @@ public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scal
     private double Value { get; }
     Scalar IScalarQuantity.Magnitude => this;
 
-    /// <summary>Instantiates a <see cref="Scalar"/>, representing a <see cref="double"/> magnitude.</summary>
+    /// <summary>Constructs a <see cref="Scalar"/>, representing a <see cref="double"/> magnitude.</summary>
     /// <param name="value">The magnitude represented by the constructed <see cref="Scalar"/>.</param>
     public Scalar(double value)
     {
         Value = value;
+    }
+
+    /// <summary>Constructs a <see cref="Scalar"/>, representing { 0 }.</summary>
+    /// <remarks>Consider preferring the more explicit <see cref="Zero"/>.</remarks>
+    public Scalar()
+    {
+        Value = 0;
     }
 
     static Scalar IScalarQuantity<Scalar>.WithMagnitude(Scalar magnitude) => magnitude;
@@ -81,12 +91,11 @@ public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scal
 
     /// <summary>Computes the sign of the <see cref="Scalar"/>, resulting in:
     /// <list type="bullet">
-    /// <item><term>1</term><description> The magnitude is positive, but not { 0 }.</description></item>
-    /// <item><term>0</term><description> The magnitude is { 0 }.</description></item>
-    /// <item><term>-1</term><description> The magnitude is negative.</description></item>
+    /// <item><term>&gt; 0</term><description> The magnitude is larger than { 0 }.</description></item>
+    /// <item><term>= 0</term><description> The magnitude is { 0 }.</description></item>
+    /// <item><term>&lt; 0</term><description> The magnitude is smaller than { 0 }.</description></item>
     /// </list></summary>
-    /// <returns>One of the <see cref="int"/> values { 1, 0, -1 }, as detailed above.</returns>
-    /// <remarks>An <see cref="ArithmeticException"/> will be thrown if the <see cref="Scalar"/> represents { <see cref="double.NaN"/> }.</remarks>
+    /// <returns>An <see cref="int"/> value, as detailed above.</returns>
     /// <exception cref="ArithmeticException"/>
     public int Sign() => Math.Sign(Value);
 
@@ -115,16 +124,21 @@ public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scal
     /// <returns>The cube root of the <see cref="Scalar"/>, { ³√ <see langword="this"/> }.</returns>
     public Scalar CubeRoot() => Math.Cbrt(Value);
 
-    /// <summary>Compares the <see cref="Scalar"/> to another, provided, <see cref="Scalar"/>, resulting in:
+    /// <summary>Compares the <see cref="Scalar"/> to another, provided, <see cref="Scalar"/>, resulting in an <see cref="int"/> according to:
     /// <list type="bullet">
-    /// <item><term>1</term><description> The <see cref="Scalar"/> represents a larger magnitude than does the provided <see cref="Scalar"/>.</description></item>
-    /// <item><term>0</term><description> The <see cref="Scalar"/> and the provided <see cref="Scalar"/> represent the same magnitude.</description></item>
-    /// <item><term>-1</term><description> The <see cref="Scalar"/> represents a smaller magnitude than does the provided <see cref="Scalar"/>.</description></item>
-    /// </list><para>The value { <see cref="NaN"/> } represents the smallest possible value.</para></summary>
+    /// <item><term>&gt; 0</term><description> The <see cref="Scalar"/> represents a larger magnitude than does the provided <see cref="Scalar"/>.</description></item>
+    /// <item><term>= 0</term><description> The <see cref="Scalar"/> and the provided <see cref="Scalar"/> represent the same magnitude.</description></item>
+    /// <item><term>&lt; 0</term><description> The <see cref="Scalar"/> represents a smaller magnitude than does the provided <see cref="Scalar"/>.</description></item>
+    /// </list></summary>
     /// <param name="other">The <see cref="Scalar"/> to which the original <see cref="Scalar"/> is compared.</param>
     /// <remarks>The behaviour is consistent with <see cref="double.CompareTo(double)"/>.</remarks>
-    /// <returns>One of the <see cref="int"/> values { 1, 0, -1 }, as detailed above.</returns>
+    /// <returns>An <see cref="int"/> value, as detailed above.</returns>
     public int CompareTo(Scalar other) => Value.CompareTo(other.Value);
+
+    /// <summary>Determiens whether the <see cref="Scalar"/> is equivalent to the provided <see cref="object"/>.</summary>
+    /// <param name="obj">The <see cref="object"/> to which the <see cref="Scalar"/> is compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the <see cref="Scalar"/> and <see cref="object"/> are quivalent.</returns>
+    public override bool Equals(object? obj) => obj is Scalar other && Equals(other);
 
     /// <summary>Determines whether the <see cref="Scalar"/> is equivalent to another, provided, <see cref="Scalar"/>.</summary>
     /// <param name="other">The <see cref="Scalar"/> to which the original <see cref="Scalar"/> is compared.</param>
@@ -257,7 +271,7 @@ public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scal
     /// <summary>Scales the provided <typeparamref name="TVector"/> by the <see cref="Scalar"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity that is scaled by the <see cref="Scalar"/>.</typeparam>
     /// <param name="factor">The <typeparamref name="TVector"/> that is scaled by the <see cref="Scalar"/>.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The scaled <typeparamref name="TVector"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public TVector Multiply<TVector>(IVector2Quantity<TVector> factor) where TVector : IVector2Quantity<TVector>
@@ -270,7 +284,7 @@ public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scal
     /// <summary>Scales the provided <typeparamref name="TVector"/> by the <see cref="Scalar"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity that is scaled by the <see cref="Scalar"/>.</typeparam>
     /// <param name="factor">The <typeparamref name="TVector"/> that is scaled by the <see cref="Scalar"/>.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The scaled <typeparamref name="TVector"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public TVector Multiply<TVector>(IVector3Quantity<TVector> factor) where TVector : IVector3Quantity<TVector>
@@ -283,7 +297,7 @@ public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scal
     /// <summary>Scales the provided <typeparamref name="TVector"/> by the <see cref="Scalar"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity that is scaled by the <see cref="Scalar"/>.</typeparam>
     /// <param name="factor">The <typeparamref name="TVector"/> that is scaled by the <see cref="Scalar"/>.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The scaled <typeparamref name="TVector"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public TVector Multiply<TVector>(IVector4Quantity<TVector> factor) where TVector : IVector4Quantity<TVector>
@@ -423,7 +437,7 @@ public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scal
     /// <typeparam name="TVector">The type of the vector quantity that is scaled by the <see cref="Scalar"/>.</typeparam>
     /// <param name="a">The <see cref="Scalar"/> by which the <typeparamref name="TVector"/> is scaled.</param>
     /// <param name="b">The <typeparamref name="TVector"/> that is scaled by the <see cref="Scalar"/>.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(Scalar, TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply2{TVector}(Scalar, TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The scaled <typeparamref name="TVector"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static TVector Multiply<TVector>(Scalar a, IVector2Quantity<TVector> b) where TVector : IVector2Quantity<TVector>
@@ -437,7 +451,7 @@ public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scal
     /// <typeparam name="TVector">The type of the vector quantity that is scaled by the <see cref="Scalar"/>.</typeparam>
     /// <param name="a">The <see cref="Scalar"/> by which the <typeparamref name="TVector"/> is scaled.</param>
     /// <param name="b">The <typeparamref name="TVector"/> that is scaled by the <see cref="Scalar"/>.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(Scalar, TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply3{TVector}(Scalar, TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The scaled <typeparamref name="TVector"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static TVector Multiply<TVector>(Scalar a, IVector3Quantity<TVector> b) where TVector : IVector3Quantity<TVector>
@@ -451,7 +465,7 @@ public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scal
     /// <typeparam name="TVector">The type of the vector quantity that is scaled by the <see cref="Scalar"/>.</typeparam>
     /// <param name="a">The <see cref="Scalar"/> by which the <typeparamref name="TVector"/> is scaled.</param>
     /// <param name="b">The <typeparamref name="TVector"/> that is scaled by the <see cref="Scalar"/>.</param>
-    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(Scalar, TVector)"/> when the vector quantity is a <see langword="struct"/> (avoiding boxing).</remarks>
+    /// <remarks>For improved performance, prefer <see cref="Multiply4{TVector}(Scalar, TVector)"/> when the vector quantity is a <see langword="struct"/>.</remarks>
     /// <returns>The scaled <typeparamref name="TVector"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     /// <exception cref="ArgumentNullException"/>
     public static TVector Multiply<TVector>(Scalar a, IVector4Quantity<TVector> b) where TVector : IVector4Quantity<TVector>
@@ -511,6 +525,18 @@ public readonly record struct Scalar : IScalarQuantity<Scalar>, IComparable<Scal
     /// <param name="y">The <see cref="Unhandled"/>, the reciprocal of which is scaled by the <see cref="Scalar"/>.</param>
     /// <returns>The scaled <see cref="Unhandled"/>, { <paramref name="x"/> / <paramref name="y"/> }.</returns>
     public static Unhandled Divide(Scalar x, Unhandled y) => x.DivideBy(y);
+
+    /// <summary>Determines whether the provided <see cref="Scalar"/> are equivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Scalar"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Scalar"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Scalar"/> are equivalent.</returns>
+    public static bool operator ==(Scalar lhs, Scalar rhs) => Equals(lhs, rhs);
+
+    /// <summary>Determines whether the provided <see cref="Scalar"/> are inequivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Scalar"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Scalar"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Scalar"/> are inequivalent.</returns>
+    public static bool operator !=(Scalar lhs, Scalar rhs) => (lhs == rhs) is false;
 
     /// <summary>Determines whether a <see cref="Scalar"/>, <paramref name="lhs"/>, represents a smaller magnitude than another <see cref="Scalar"/>, <paramref name="rhs"/>.</summary>
     /// <param name="lhs">The first <see cref="Scalar"/>, assumed to represent a smaller magnitude than the other <see cref="Scalar"/>.</param>

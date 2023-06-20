@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 /// <summary>A measure of some four-dimensional vector quantity not covered by a designated type.</summary>
-public readonly record struct Unhandled4 : IVector4Quantity<Unhandled4>, IFormattable
+public readonly struct Unhandled4 : IVector4Quantity<Unhandled4>, IEquatable<Unhandled4>, IFormattable
 {
     /// <summary>The <see cref="Unhandled4"/> representing { 0, 0, 0 }.</summary>
     public static Unhandled4 Zero { get; } = new(0, 0, 0, 0);
@@ -30,7 +30,7 @@ public readonly record struct Unhandled4 : IVector4Quantity<Unhandled4>, IFormat
     /// <summary>The magnitudes of the X, Y, Z, and W components of the <see cref="Unhandled4"/>.</summary>
     public Vector4 Components => (X.Magnitude, Y.Magnitude, Z.Magnitude, W.Magnitude);
 
-    /// <summary>Instantiates an <see cref="Unhandled4"/>, representing a measure of some four-dimensional vector quantity not covered by a designated type.</summary>
+    /// <summary>Constructs an <see cref="Unhandled4"/>, representing a measure of some four-dimensional vector quantity not covered by a designated type.</summary>
     /// <param name="x">The X-component of the constructed <see cref="Unhandled4"/>.</param>
     /// <param name="y">The Y-component of the constructed <see cref="Unhandled4"/>.</param>
     /// <param name="z">The Z-component of the constructed <see cref="Unhandled4"/>.</param>
@@ -43,7 +43,7 @@ public readonly record struct Unhandled4 : IVector4Quantity<Unhandled4>, IFormat
         W = w;
     }
 
-    /// <summary>Instantiates an <see cref="Unhandled4"/>, representing a measure of some four-dimensional vector quantity not covered by a designated type.</summary>
+    /// <summary>Constructs an <see cref="Unhandled4"/>, representing a measure of some four-dimensional vector quantity not covered by a designated type.</summary>
     /// <param name="x">The magnitude of the X-component of the constructed <see cref="Unhandled4"/>.</param>
     /// <param name="y">The magnitude of the Y-component of the constructed <see cref="Unhandled4"/>.</param>
     /// <param name="z">The magnitude of the Z-component of the constructed <see cref="Unhandled4"/>.</param>
@@ -56,7 +56,7 @@ public readonly record struct Unhandled4 : IVector4Quantity<Unhandled4>, IFormat
         W = new(w);
     }
 
-    /// <summary>Instantiates an <see cref="Unhandled4"/>, representing a measure of some four-dimensional vector quantity not covered by a designated type.</summary>
+    /// <summary>Constructs an <see cref="Unhandled4"/>, representing a measure of some four-dimensional vector quantity not covered by a designated type.</summary>
     /// <param name="components">The magnitudes of the components of the constructed <see cref="Unhandled4"/>.</param>
     public Unhandled4(Vector4 components)
     {
@@ -64,6 +64,16 @@ public readonly record struct Unhandled4 : IVector4Quantity<Unhandled4>, IFormat
         Y = new(components.Y);
         Z = new(components.Z);
         W = new(components.W);
+    }
+
+    /// <summary>Constructs an <see cref="Unhandled4"/>, representing { 0, 0, 0, 0 }.</summary>
+    /// <remarks>Consider preferring the more explicit <see cref="Zero"/>.</remarks>s
+    public Unhandled4()
+    {
+        X = Unhandled.Zero;
+        Y = Unhandled.Zero;
+        Z = Unhandled.Zero;
+        W = Unhandled.Zero;
     }
 
     static Unhandled4 IVector4Quantity<Unhandled4>.WithComponents(Vector4 components) => new(components);
@@ -105,6 +115,11 @@ public readonly record struct Unhandled4 : IVector4Quantity<Unhandled4>, IFormat
     /// <summary>Computes the normalized <see cref="Unhandled4"/> - the <see cref="Unhandled4"/> with the same direction, but magnitude { 1 }.</summary>
     /// <returns>The normalized <see cref="Unhandled4"/>.</returns>
     public Unhandled4 Normalize() => this / PureMagnitude();
+
+    /// <summary>Determiens whether the <see cref="Unhandled4"/> is equivalent to the provided <see cref="object"/>.</summary>
+    /// <param name="obj">The <see cref="object"/> to which the <see cref="Unhandled4"/> is compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the <see cref="Unhandled4"/> and <see cref="object"/> are quivalent.</returns>
+    public override bool Equals(object? obj) => obj is Unhandled4 other && Equals(other);
 
     /// <summary>Determines whether the <see cref="Unhandled4"/> is equivalent to another, provided, <see cref="Unhandled4"/>.</summary>
     /// <param name="other">The <see cref="Unhandled4"/> to which the original <see cref="Unhandled4"/> is compared.</param>
@@ -237,6 +252,11 @@ public readonly record struct Unhandled4 : IVector4Quantity<Unhandled4>, IFormat
         return (X / divisor.Magnitude, Y / divisor.Magnitude, Z / divisor.Magnitude, W / divisor.Magnitude);
     }
 
+    /// <summary>Computes the dot-product of the <see cref="Unhandled4"/> and the provided <see cref="Vector4"/>.</summary>
+    /// <param name="factor">The <see cref="Vector4"/> by which the <see cref="Unhandled4"/> is dot-multiplied.</param>
+    /// <returns>The dot-product of the <see cref="Unhandled4"/> and <see cref="Vector4"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
+    public Unhandled Dot(Vector4 factor) => Dot<Vector4>(factor);
+
     /// <summary>Computes the dot product of the <see cref="Unhandled4"/> and the provided <typeparamref name="TVector"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled4"/> is dot multiplied.</typeparam>
     /// <param name="factor">The <typeparamref name="TVector"/> by which the <see cref="Unhandled4"/> is dot multiplied.</param>
@@ -313,6 +333,12 @@ public readonly record struct Unhandled4 : IVector4Quantity<Unhandled4>, IFormat
         return a.DivideBy(b);
     }
 
+    /// <summary>Computes the dot-product of the provided <see cref="Unhandled4"/> and <see cref="Vector4"/>.</summary>
+    /// <param name="a">The <see cref="Unhandled4"/> by which the <see cref="Vector4"/> is dot-multiplied.</param>
+    /// <param name="b">The <see cref="Vector4"/> by which the <see cref="Unhandled4"/> is dot-multiplied.</param>
+    /// <returns>The dot-product of the <see cref="Unhandled4"/> and <see cref="Vector4"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
+    public static Unhandled Dot(Unhandled4 a, Vector4 b) => a.Dot(b);
+
     /// <summary>Computes the dot-product of the provided <see cref="Unhandled4"/> and <typeparamref name="TVector"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled4"/> is dot-multiplied.</typeparam>
     /// <param name="a">The <see cref="Unhandled4"/> by which the <typeparamref name="TVector"/> is dot-multiplied.</param>
@@ -325,6 +351,18 @@ public readonly record struct Unhandled4 : IVector4Quantity<Unhandled4>, IFormat
 
         return a.Dot(b);
     }
+
+    /// <summary>Determines whether the provided <see cref="Unhandled4"/> are equivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Unhandled4"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Unhandled4"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Unhandled4"/> are equivalent.</returns>
+    public static bool operator ==(Unhandled4 lhs, Unhandled4 rhs) => Equals(lhs, rhs);
+
+    /// <summary>Determines whether the provided <see cref="Unhandled4"/> are inequivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Unhandled4"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Unhandled4"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Unhandled4"/> are inequivalent.</returns>
+    public static bool operator !=(Unhandled4 lhs, Unhandled4 rhs) => (lhs == rhs) is false;
 
     /// <summary>Applies the unary plus to the provided <see cref="Unhandled4"/>.</summary>
     /// <param name="a">The <see cref="Unhandled4"/> to which the unary plus is applied.</param>

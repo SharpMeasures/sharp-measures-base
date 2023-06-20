@@ -5,7 +5,7 @@ using System.Globalization;
 
 /// <summary>Describes a metric prefix, scaling quantities using powers of 2.</summary>
 /// <remarks>Common <see cref="BinaryPrefix"/> are defined as static properties.</remarks>
-public sealed record class BinaryPrefix : IPrefix, IComparable<BinaryPrefix>, IFormattable
+public sealed class BinaryPrefix : IPrefix, IEquatable<BinaryPrefix>, IComparable<BinaryPrefix>, IFormattable
 {
     /// <summary>Indicates that a quantity should be scaled by { 2 ^ 80 = 1 024 ^ 8 }. Usually denoted by { Yi }.</summary>
     public static BinaryPrefix Yobi { get; } = ThousandTwentyFourToThePower(8);
@@ -100,6 +100,11 @@ public sealed record class BinaryPrefix : IPrefix, IComparable<BinaryPrefix>, IF
         return Factor.CompareTo(other.Factor);
     }
 
+    /// <summary>Determiens whether the <see cref="BinaryPrefix"/> is equivalent to the provided <see cref="object"/>.</summary>
+    /// <param name="obj">The <see cref="object"/> to which the <see cref="BinaryPrefix"/> is compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the <see cref="BinaryPrefix"/> and <see cref="object"/> are quivalent.</returns>
+    public override bool Equals(object? obj) => Equals(obj as BinaryPrefix);
+
     /// <summary>Determines whether the <see cref="BinaryPrefix"/> is equivalent to another, provided, <see cref="BinaryPrefix"/>.</summary>
     /// <param name="other">The <see cref="BinaryPrefix"/> to which the original <see cref="BinaryPrefix"/> is compared.</param>
     /// <returns>A <see cref="bool"/> indicating whether the two <see cref="BinaryPrefix"/> are equivalent.</returns>
@@ -149,6 +154,18 @@ public sealed record class BinaryPrefix : IPrefix, IComparable<BinaryPrefix>, IF
     /// <remarks>The behaviour is consistent with <see cref="Scalar.ToStringInvariant(string?)"/>.</remarks>
     /// <returns>A <see cref="string"/>-representation of the <see cref="BinaryPrefix"/>.</returns>
     public string ToStringInvariant(string? format) => ToString(format, CultureInfo.InvariantCulture);
+
+    /// <summary>Determines whether the provided <see cref="BinaryPrefix"/> are equivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="BinaryPrefix"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="BinaryPrefix"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="BinaryPrefix"/> are equivalent.</returns>
+    public static bool operator ==(BinaryPrefix? lhs, BinaryPrefix? rhs) => Equals(lhs, rhs);
+
+    /// <summary>Determines whether the provided <see cref="BinaryPrefix"/> are inequivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="BinaryPrefix"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="BinaryPrefix"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="BinaryPrefix"/> are inequivalent.</returns>
+    public static bool operator !=(BinaryPrefix? lhs, BinaryPrefix? rhs) => (lhs == rhs) is false;
 
     /// <summary>Determines whether a <see cref="BinaryPrefix"/>, <paramref name="lhs"/>, represents a smaller scale-factor than another <see cref="BinaryPrefix"/>, <paramref name="rhs"/>.</summary>
     /// <param name="lhs">The first <see cref="BinaryPrefix"/>, assumed to represent a smaller scale-factor than the other <see cref="BinaryPrefix"/>.</param>

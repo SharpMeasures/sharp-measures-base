@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 /// <summary>A measure of some two-dimensional vector quantity not covered by a designated type.</summary>
-public readonly record struct Unhandled2 : IVector2Quantity<Unhandled2>, IFormattable
+public readonly struct Unhandled2 : IVector2Quantity<Unhandled2>, IEquatable<Unhandled2>, IFormattable
 {
     /// <summary>The <see cref="Unhandled2"/> representing { 0, 0 }.</summary>
     public static Unhandled2 Zero { get; } = new(0, 0);
@@ -22,7 +22,7 @@ public readonly record struct Unhandled2 : IVector2Quantity<Unhandled2>, IFormat
     /// <summary>The magnitudes of the X and Y components of the <see cref="Unhandled2"/>.</summary>
     public Vector2 Components => (X.Magnitude, Y.Magnitude);
 
-    /// <summary>Instantiates an <see cref="Unhandled2"/>, representing a measure of some two-dimensional vector quantity not covered by a designated type.</summary>
+    /// <summary>Constructs an <see cref="Unhandled2"/>, representing a measure of some two-dimensional vector quantity not covered by a designated type.</summary>
     /// <param name="x">The X-component of the constructed <see cref="Unhandled2"/>.</param>
     /// <param name="y">The Y-component of the constructed <see cref="Unhandled2"/>.</param>
     public Unhandled2(Unhandled x, Unhandled y)
@@ -31,7 +31,7 @@ public readonly record struct Unhandled2 : IVector2Quantity<Unhandled2>, IFormat
         Y = y;
     }
 
-    /// <summary>Instantiates an <see cref="Unhandled2"/>, representing a measure of some two-dimensional vector quantity not covered by a designated type.</summary>
+    /// <summary>Constructs an <see cref="Unhandled2"/>, representing a measure of some two-dimensional vector quantity not covered by a designated type.</summary>
     /// <param name="x">The magnitude of the X-component of the constructed <see cref="Unhandled2"/>.</param>
     /// <param name="y">The magnitude of the Y-component of the constructed <see cref="Unhandled2"/>.</param>
     public Unhandled2(Scalar x, Scalar y)
@@ -40,12 +40,20 @@ public readonly record struct Unhandled2 : IVector2Quantity<Unhandled2>, IFormat
         Y = new(y);
     }
 
-    /// <summary>Instantiates an <see cref="Unhandled2"/>, representing a measure of some two-dimensional vector quantity not covered by a designated type.</summary>
+    /// <summary>Constructs an <see cref="Unhandled2"/>, representing a measure of some two-dimensional vector quantity not covered by a designated type.</summary>
     /// <param name="components">The magnitudes of the components of the constructed <see cref="Unhandled2"/>.</param>
     public Unhandled2(Vector2 components)
     {
         X = new(components.X);
         Y = new(components.Y);
+    }
+
+    /// <summary>Constructs an <see cref="Unhandled2"/>, representing { 0, 0 }.</summary>
+    /// <remarks>Consider preferring the more explicit <see cref="Zero"/>.</remarks>s
+    public Unhandled2()
+    {
+        X = Unhandled.Zero;
+        Y = Unhandled.Zero;
     }
 
     static Unhandled2 IVector2Quantity<Unhandled2>.WithComponents(Vector2 components) => new(components);
@@ -87,6 +95,11 @@ public readonly record struct Unhandled2 : IVector2Quantity<Unhandled2>, IFormat
     /// <summary>Computes the normalized <see cref="Unhandled2"/> - the <see cref="Unhandled2"/> with the same direction, but magnitude { 1 }.</summary>
     /// <returns>The normalized <see cref="Unhandled2"/>.</returns>
     public Unhandled2 Normalize() => this / PureMagnitude();
+
+    /// <summary>Determiens whether the <see cref="Unhandled2"/> is equivalent to the provided <see cref="object"/>.</summary>
+    /// <param name="obj">The <see cref="object"/> to which the <see cref="Unhandled2"/> is compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the <see cref="Unhandled2"/> and <see cref="object"/> are quivalent.</returns>
+    public override bool Equals(object? obj) => obj is Unhandled2 other && Equals(other);
 
     /// <summary>Determines whether the <see cref="Unhandled2"/> is equivalent to another, provided, <see cref="Unhandled2"/>.</summary>
     /// <param name="other">The <see cref="Unhandled2"/> to which the original <see cref="Unhandled2"/> is compared.</param>
@@ -215,6 +228,11 @@ public readonly record struct Unhandled2 : IVector2Quantity<Unhandled2>, IFormat
         return (X / divisor.Magnitude, Y / divisor.Magnitude);
     }
 
+    /// <summary>Computes the dot-product of the <see cref="Unhandled2"/> and the provided <see cref="Vector2"/>.</summary>
+    /// <param name="factor">The <see cref="Vector2"/> by which the <see cref="Unhandled2"/> is dot-multiplied.</param>
+    /// <returns>The dot-product of the <see cref="Unhandled2"/> and <see cref="Vector2"/>, { <see langword="this"/> ∙ <paramref name="factor"/> }.</returns>
+    public Unhandled Dot(Vector2 factor) => Dot<Vector2>(factor);
+
     /// <summary>Computes the dot-product of the <see cref="Unhandled2"/> and the provided <typeparamref name="TVector"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled2"/> is dot-multiplied.</typeparam>
     /// <param name="factor">The <typeparamref name="TVector"/> by which the <see cref="Unhandled2"/> is dot-multiplied.</param>
@@ -291,6 +309,12 @@ public readonly record struct Unhandled2 : IVector2Quantity<Unhandled2>, IFormat
         return a.DivideBy(b);
     }
 
+    /// <summary>Computes the dot-product of the provided <see cref="Unhandled2"/> and <see cref="Vector2"/>.</summary>
+    /// <param name="a">The <see cref="Unhandled2"/> by which the <see cref="Vector2"/> is dot-multiplied.</param>
+    /// <param name="b">The <see cref="Vector2"/> by which the <see cref="Unhandled2"/> is dot-multiplied.</param>
+    /// <returns>The dot-product of the <see cref="Unhandled2"/> and <see cref="Vector2"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
+    public static Unhandled Dot(Unhandled2 a, Vector2 b) => a.Dot(b);
+
     /// <summary>Computes the dot-product of the provided <see cref="Unhandled2"/> and <typeparamref name="TVector"/>.</summary>
     /// <typeparam name="TVector">The type of the vector quantity by which the <see cref="Unhandled2"/> is dot-multiplied.</typeparam>
     /// <param name="a">The <see cref="Unhandled2"/> by which the <typeparamref name="TVector"/> is dot-multiplied.</param>
@@ -303,6 +327,18 @@ public readonly record struct Unhandled2 : IVector2Quantity<Unhandled2>, IFormat
 
         return a.Dot(b);
     }
+
+    /// <summary>Determines whether the provided <see cref="Unhandled2"/> are equivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Unhandled2"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Unhandled2"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Unhandled2"/> are equivalent.</returns>
+    public static bool operator ==(Unhandled2 lhs, Unhandled2 rhs) => Equals(lhs, rhs);
+
+    /// <summary>Determines whether the provided <see cref="Unhandled2"/> are inequivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Unhandled2"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Unhandled2"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Unhandled2"/> are inequivalent.</returns>
+    public static bool operator !=(Unhandled2 lhs, Unhandled2 rhs) => (lhs == rhs) is false;
 
     /// <summary>Applies the unary plus to the provided <see cref="Unhandled2"/>.</summary>
     /// <param name="a">The <see cref="Unhandled2"/> to which the unary plus is applied.</param>

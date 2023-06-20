@@ -4,13 +4,16 @@ using System;
 using System.Globalization;
 
 /// <summary>A two-dimensional vector, representing the <see cref="Scalar"/> components { X, Y }.</summary>
-public readonly record struct Vector2 : IVector2Quantity<Vector2>, IFormattable
+public readonly struct Vector2 : IVector2Quantity<Vector2>, IEquatable<Vector2>, IFormattable
 {
     /// <summary>The <see cref="Vector2"/> representing { 0, 0 }.</summary>
     public static Vector2 Zero { get; } = (0, 0);
 
     /// <summary>The <see cref="Vector2"/> representing { 1, 1 }.</summary>
     public static Vector2 Ones { get; } = (1, 1);
+
+    /// <summary>The <see cref="Vector2"/> representing { -1, -1 }.</summary>
+    public static Vector2 NegativeOnes { get; } = (-1, -1);
 
     /// <summary>The X-component of the <see cref="Vector2"/>.</summary>
     public Scalar X { get; }
@@ -20,13 +23,21 @@ public readonly record struct Vector2 : IVector2Quantity<Vector2>, IFormattable
 
     Vector2 IVector2Quantity.Components => this;
 
-    /// <summary>Instantiates a <see cref="Vector2"/>, representing the <see cref="Scalar"/> components { X, Y }.</summary>
+    /// <summary>Constructs a <see cref="Vector2"/>, representing the <see cref="Scalar"/> components { X, Y }.</summary>
     /// <param name="x">The X-component of the constructed <see cref="Vector2"/>.</param>
     /// <param name="y">The Y-component of the constructed <see cref="Vector2"/>.</param>
     public Vector2(Scalar x, Scalar y)
     {
         X = x;
         Y = y;
+    }
+
+    /// <summary>Constructs a <see cref="Vector2"/>, representing { 0, 0 }.</summary>
+    /// <remarks>Consider preferring the more explicit <see cref="Zero"/>.</remarks>
+    public Vector2()
+    {
+        X = Scalar.Zero;
+        Y = Scalar.Zero;
     }
 
     static Vector2 IVector2Quantity<Vector2>.WithComponents(Vector2 components) => components;
@@ -53,6 +64,11 @@ public readonly record struct Vector2 : IVector2Quantity<Vector2>, IFormattable
     /// <summary>Computes the normalized <see cref="Vector2"/> - the <see cref="Vector2"/> with the same direction, but magnitude { 1 }.</summary>
     /// <returns>The normalized <see cref="Vector2"/>.</returns>
     public Vector2 Normalize() => this / Magnitude();
+
+    /// <summary>Determiens whether the <see cref="Vector2"/> is equivalent to the provided <see cref="object"/>.</summary>
+    /// <param name="obj">The <see cref="object"/> to which the <see cref="Vector2"/> is compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the <see cref="Vector2"/> and <see cref="object"/> are quivalent.</returns>
+    public override bool Equals(object? obj) => obj is Vector2 other && Equals(other);
 
     /// <summary>Determines whether the <see cref="Vector2"/> is equivalent to another, provided, <see cref="Vector2"/>.</summary>
     /// <param name="other">The <see cref="Vector2"/> to which the original <see cref="Vector2"/> is compared.</param>
@@ -235,6 +251,18 @@ public readonly record struct Vector2 : IVector2Quantity<Vector2>, IFormattable
     /// <param name="b">The second <see cref="Vector2"/>, by which the first <see cref="Vector2"/> is dot-multiplied.</param>
     /// <returns>The dot-product of the <see cref="Vector2"/>, { <paramref name="a"/> ∙ <paramref name="b"/> }.</returns>
     public static Scalar Dot(Vector2 a, Vector2 b) => a.Dot(b);
+
+    /// <summary>Determines whether the provided <see cref="Vector2"/> are equivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Vector2"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Vector2"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Vector2"/> are equivalent.</returns>
+    public static bool operator ==(Vector2 lhs, Vector2 rhs) => Equals(lhs, rhs);
+
+    /// <summary>Determines whether the provided <see cref="Vector2"/> are inequivalent.</summary>
+    /// <param name="lhs">The first of the two <see cref="Vector2"/> that are compared.</param>
+    /// <param name="rhs">The second of the two <see cref="Vector2"/> that are compared.</param>
+    /// <returns>A <see cref="bool"/> indicating whether the provided <see cref="Vector2"/> are inequivalent.</returns>
+    public static bool operator !=(Vector2 lhs, Vector2 rhs) => (lhs == rhs) is false;
 
     /// <summary>Applies the unary plus to the provided <see cref="Vector2"/>.</summary>
     /// <param name="a">The <see cref="Vector2"/> to which the unary plus is applied.</param>
