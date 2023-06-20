@@ -10,7 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.targets = Directory.Build.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpMeasures.Base", "src\SharpMeasures.Base\SharpMeasures.Base.csproj", "{97BADFB1-DC49-42D9-A1D3-8EDBF76263FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpMeasures.Base", "src\SharpMeasures.Base\SharpMeasures.Base.csproj", "{97BADFB1-DC49-42D9-A1D3-8EDBF76263FE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpMeasures.Base.UnitTests", "tests\unit\SharpMeasures.Base.UnitTests\SharpMeasures.Base.UnitTests.csproj", "{4C6FC2DC-F387-42F7-AA6E-4D7BC8338A55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,6 +24,10 @@ Global
 		{97BADFB1-DC49-42D9-A1D3-8EDBF76263FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97BADFB1-DC49-42D9-A1D3-8EDBF76263FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97BADFB1-DC49-42D9-A1D3-8EDBF76263FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C6FC2DC-F387-42F7-AA6E-4D7BC8338A55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C6FC2DC-F387-42F7-AA6E-4D7BC8338A55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C6FC2DC-F387-42F7-AA6E-4D7BC8338A55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C6FC2DC-F387-42F7-AA6E-4D7BC8338A55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
