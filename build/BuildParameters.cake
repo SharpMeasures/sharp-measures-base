@@ -4,7 +4,7 @@
 
 public class BuildParameters
 {
-    public string Owner { get; } = "ErikWe";
+    public string Owner { get; } = "SharpMeasures";
     public string Repository { get; } = "sharp-measures-base";
 
     public bool IsRunningOnGitHubActions { get; }
