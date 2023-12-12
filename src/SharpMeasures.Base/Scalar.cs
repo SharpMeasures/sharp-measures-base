@@ -25,7 +25,7 @@ public readonly struct Scalar : IScalarQuantity<Scalar>, IEquatable<Scalar>, ICo
     public static Scalar NegativeInfinity { get; } = double.NegativeInfinity;
 
     /// <summary>The magnitude represented by the <see cref="Scalar"/>.</summary>
-    private double Value { get; }
+    private readonly double Value;
     Scalar IScalarQuantity.Magnitude => this;
 
     /// <summary>Constructs a <see cref="Scalar"/>, representing a <see cref="double"/> magnitude.</summary>
